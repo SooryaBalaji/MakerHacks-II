@@ -3,22 +3,21 @@
 #include <ArduinoJson.h>
 #include <ESP32Servo.h>
 
-// === Pins ===
+// PINS
 #define TRIG_PIN 18
 #define ECHO_PIN 5
 #define SERVO_PIN 27
 
-// === Wi-Fi Credentials ===
+// Wifi Credentials 
 const char* ssid = "ESP32-siva_the_goat";
 const char* password = "robot1234";
 
-// === PID Parameters ===
 float D0 = 15.0;   // Target distance (cm)
 float kP = 0.5;
 float kI = 0.0;
 float kD = 0.0;
 
-// === Globals ===
+// Globals
 long duration;
 float distance = 0;
 float previousError = 0;
@@ -34,7 +33,7 @@ const unsigned long PID_INTERVAL = 20; // 50Hz update rate
 Servo flywheelServo;
 WebServer server(80);
 
-// === Measure distance ===
+//Get Distance
 float getDistance() {
   digitalWrite(TRIG_PIN, LOW);
   delayMicroseconds(2);
@@ -44,7 +43,7 @@ float getDistance() {
 
   duration = pulseIn(ECHO_PIN, HIGH, 40000);
   if (duration == 0) {
-    Serial.println("⚠️ No echo detected");
+    Serial.println("No echo detected");
     return distance; // Return last valid distance
   }
 
@@ -57,7 +56,7 @@ float getDistance() {
   return distance;
 }
 
-// === PID Control Update ===
+// Update the PID
 void updatePID() {
   distance = getDistance();
 
@@ -78,12 +77,12 @@ void updatePID() {
   
   float outputValue = (kP * tiltError) + (kI * integral) + (kD * derivative);
 
-  // === Servo Control ===
+  // Servo control
   servoPosition = constrain(servoPosition - outputValue, minPositionForServo, maxPositionForServo);
   flywheelServo.write(servoPosition);
 }
 
-// === Handle JSON endpoint ===
+// Handle JSON endpoint
 void handleData() {
   StaticJsonDocument<300> doc;
   doc["distance"] = distance;
@@ -100,7 +99,7 @@ void handleData() {
   server.send(200, "application/json", json);
 }
 
-// === Update PID Parameters ===
+// Update PID parameters
 void handleUpdatePID() {
   if (server.hasArg("plain")) {
     StaticJsonDocument<200> doc;
@@ -120,7 +119,7 @@ void handleUpdatePID() {
   server.send(400, "application/json", "{\"status\":\"error\"}");
 }
 
-// === Reset System ===
+// reset system
 void handleReset() {
   servoPosition = 90;
   integral = 0;
@@ -130,7 +129,7 @@ void handleReset() {
   Serial.println("System reset to center position");
 }
 
-// === Web Page ===
+// the web page
 void handleRoot() {
   String page = R"rawliteral(
 <!DOCTYPE html>
@@ -290,7 +289,7 @@ void handleRoot() {
 </head>
 <body>
   <div class="container">
-    <h1>🎯 Flywheel Balance Robot</h1>
+    <h1>Flywheel Balance Robot</h1>
     
     <div class="card">
       <h2>Real-time Data</h2>
@@ -408,7 +407,7 @@ void handleRoot() {
   server.send(200, "text/html", page);
 }
 
-// === Setup ===
+// Setup
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -440,7 +439,7 @@ void setup() {
   Serial.println("Connect to WiFi and visit: http://" + WiFi.softAPIP().toString());
 }
 
-// === Loop ===
+// Loop
 void loop() {
   // Run PID control at consistent rate (50Hz)
   unsigned long currentMillis = millis();
