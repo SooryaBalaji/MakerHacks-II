@@ -421,13 +421,10 @@ void setup() {
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid, password);
 
-  Serial.println("\n================================");
   Serial.println("Flywheel Balance Robot Started!");
-  Serial.println("================================");
   Serial.print("SSID: "); Serial.println(ssid);
   Serial.print("Password: "); Serial.println(password);
   Serial.print("AP IP Address: "); Serial.println(WiFi.softAPIP());
-  Serial.println("================================");
 
   server.on("/", handleRoot);
   server.on("/data", handleData);
